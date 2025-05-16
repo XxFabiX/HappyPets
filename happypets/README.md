@@ -1,16 +1,24 @@
-# happypets
+# HappyPets
 
-A new Flutter project.
+Proyecto1 Programación de Dispositivos Moviles
+Fabián Arévalo
+Link Repositorio: https://github.com/XxFabiX/HappyPets/tree/main/happypets
+Link Video: https://youtu.be/wTJ2BCLrj4E
 
-## Getting Started
+## Descripción
 
-This project is a starting point for a Flutter application.
+HappyPets es una aplicación movil desarrollada en Flutter para conectar animamles en situación de adopción con personas interesadas. Surge como proyecto academico en la Universidad de Talca, en el curso de Progración de Dispositivos Moviles, con el objetivo de promover adopciones responsables y educación sobre cuidados de animales.
 
-A few resources to get you started if this is your first Flutter project:
+Caracteristicas Principales:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+-Interfaz intuitiva con la navegación por pestañas
+-Diseño adaptable para moviles de diferentes tamaños
+-Autentificación
+-Gestión de diversos datos
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Funcionalidades Clave:
+-Rescate
+-Información sobre cuidados
+-Perfil
+-Configuraciones
+

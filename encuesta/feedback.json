@@ -1,0 +1,52 @@
+{
+  "usabilidad": [
+    {
+      "titulo": "¿Qué tan fácil le fue navegar a través de la aplicación?",
+      "valor": 0
+    },
+    {
+      "titulo": "¿Pudo interactura con la aplicación sin problemas?",
+      "valor": 0
+    },
+    {
+      "titulo": "¿Califique la interfaz gráfica en términos de diseño y claridad?",
+      "valor": 0
+    }
+  ],
+  "contenido": [
+    {
+      "titulo": "¿El contenido de la aplicación fue útil para que pudiese comprender de que se trataba este proyecto?",
+      "valor": 0
+    },
+    {
+      "titulo": "¿Qué tan bien el contenido de la aplicación se adapta a sus expectativas?",
+      "valor": 0
+    },
+    {
+      "titulo": "¿El contenido de la aplicación está presentado de manera clara y comprensible?",
+      "valor": 0
+    },
+    {
+      "titulo": "¿Qué tan bien está organizada la aplicacións?",
+      "valor": 0 
+    },
+    {
+      "titulo": "¿Qué tan compresible le resulta la navegación en la aplicación?",
+      "valor": 0 
+    }
+  ],
+  "compartir": [
+    {
+      "titulo": "¿Qué tan probable es que recomiendes esta aplicación a otra persona (amigo, familiar, etc.)?",
+      "valor": 0
+    },
+    {
+      "titulo": "¿Cómo te sentirías al compartir esta aplicación con alguien más?",
+      "valor": 0
+    },
+    {
+      "titulo": "¿Crees que esta aplicación podría ser útil para rescatar animales si llega a más personas?",
+      "valor": 0
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'profile.dart';
 import 'configuration.dart';
+import 'feedback.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -162,6 +163,15 @@ class _HomePageState extends State<HomePage> {
                 context,
                 MaterialPageRoute(builder: (context) => const ConfigurationPage()),
               );
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.feedback),
+            title: const Text('Tu Opinión'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/feedback');
             },
           ),
         ],

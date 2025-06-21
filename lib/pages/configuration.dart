@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'splash.dart';
+import 'profile.dart';
+import '../main.dart';
 
 class ConfigurationPage extends StatefulWidget {
   const ConfigurationPage({super.key});
@@ -9,13 +12,14 @@ class ConfigurationPage extends StatefulWidget {
 }
 
 class _ConfigurationPageState extends State<ConfigurationPage> {
+  bool _showEmail = true;
+  bool _showPhone = true;
+  String _currentTheme = 'system';
 
-  // Datos del usuario editables
-  String userName = "Juana Pérez";
-  String userEmail = "juanita.perez@gmail.com";
-  String userPhone = "+596 1234 4321";
-  
-  // controladores para los campos de edicion
+  String userName = "";
+  String userEmail = "";
+  String userPhone = "";
+
   late TextEditingController nameController;
   late TextEditingController emailController;
   late TextEditingController phoneController;
@@ -23,30 +27,47 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   @override
   void initState() {
     super.initState();
+    _loadPreferences();
+  }
 
-    //inicializar controladores con los valores actuales
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _showEmail = prefs.getBool('show_email') ?? true;
+      _showPhone = prefs.getBool('show_phone') ?? true;
+      _currentTheme = prefs.getString('app_theme') ?? 'system';
+      userName = prefs.getString('user_name') ?? "Juana Pérez";
+      userEmail = prefs.getString('user_email') ?? "juanita.perez@gmail.com";
+      userPhone = prefs.getString('user_phone') ?? "+596 1234 4321";
+    });
+
     nameController = TextEditingController(text: userName);
     emailController = TextEditingController(text: userEmail);
     phoneController = TextEditingController(text: userPhone);
   }
 
+  Future<void> _saveUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_name', userName);
+    await prefs.setString('user_email', userEmail);
+    await prefs.setString('user_phone', userPhone);
+  }
+
   @override
   void dispose() {
-
-    //limpiador los controladores cuando el widget se destruya
+    
     nameController.dispose();
     emailController.dispose();
     phoneController.dispose();
     super.dispose();
   }
 
-  //mostrar dialogo de edicion
+
   void _showEditDialog(String field) {
     TextEditingController controller;
     String title;
-    
-    //seleccionar controlador y titulos
-    switch(field) {
+
+    switch (field) {
       case 'name':
         controller = nameController;
         title = 'Editar Nombre';
@@ -81,13 +102,14 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
               child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 setState(() {
-                  //actualizar valores
+
                   if (field == 'name') userName = controller.text;
                   if (field == 'email') userEmail = controller.text;
                   if (field == 'phone') userPhone = controller.text;
                 });
+                await _saveUserData();
                 Navigator.pop(context);
               },
               child: const Text('Guardar'),
@@ -109,7 +131,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          //info personal
+
           Card(
             elevation: 3,
             margin: const EdgeInsets.only(bottom: 20),
@@ -152,7 +174,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
             ),
           ),
 
-          //configuraciones generales
           Card(
             elevation: 3,
             child: Column(
@@ -161,6 +182,33 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                   icon: Icons.notifications,
                   title: 'Notificaciones',
                   onTap: () {},
+                ),
+                ListTile(
+                  leading: Icon(Icons.brightness_6, color: Colors.blue[800]),
+                  title: const Text('Tema de la aplicación'),
+                  subtitle: Text(_getThemeText(_currentTheme)),
+                  onTap: () => _showThemeSelectionDialog(context),
+                ),
+                const Divider(height: 1),
+                SwitchListTile(
+                  title: const Text('Mostrar email en perfil'),
+                  value: _showEmail,
+                  onChanged: (value) async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('show_email', value);
+                    if (!mounted) return;
+                    setState(() => _showEmail = value);
+                  },
+                ),
+                SwitchListTile(
+                  title: const Text('Mostrar teléfono en perfil'),
+                  value: _showPhone,
+                  onChanged: (value) async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('show_phone', value);
+                    if (!mounted) return;
+                    setState(() => _showPhone = value);
+                  },
                 ),
                 const Divider(height: 1),
                 _buildSettingsOption(
@@ -184,13 +232,12 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
             ),
           ),
 
-          //botn de cerrar sesion 
           const SizedBox(height: 30),
           ElevatedButton.icon(
             icon: const Icon(Icons.logout),
             label: const Text('Cerrar Sesión'),
             onPressed: () {
-              //navegacion al SplashScreen limpiando el stack
+
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const SplashScreen()),
@@ -211,13 +258,18 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     );
   }
 
-  //widget para construir filas de informacion del perfil
+
   Widget _buildProfileInfoRow({
     required IconData icon,
     required String label,
     required String value,
     required VoidCallback onEdit,
   }) {
+    if ((label == 'Correo' && !_showEmail) ||
+        (label == 'Teléfono' && !_showPhone)) {
+      return const SizedBox();
+    }
+
     return Row(
       children: [
         Icon(icon, color: Colors.blue[800]),
@@ -228,10 +280,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 4),
               Text(
@@ -253,7 +302,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     );
   }
 
-  //widget para opciones de configuracion
+
   Widget _buildSettingsOption({
     required IconData icon,
     required String title,
@@ -267,7 +316,17 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     );
   }
 
-  //dialogo de Ayuda y Soporte
+  String _getThemeText(String theme) {
+    switch (theme) {
+      case 'light':
+        return 'Claro';
+      case 'dark':
+        return 'Oscuro';
+      default:
+        return 'Sistema (recomendado)';
+    }
+  }
+
   void _showHelpDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -303,7 +362,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     );
   }
 
-  //Acerca de
+
   void _showAboutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -332,6 +391,47 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
               child: const Text('Cerrar'),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showThemeSelectionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Seleccionar tema'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildThemeOption(context, 'Sistema', 'system'),
+              _buildThemeOption(context, 'Claro', 'light'),
+              _buildThemeOption(context, 'Oscuro', 'dark'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeOption(BuildContext context, String text, String value) {
+    return ListTile(
+      title: Text(text),
+      trailing: _currentTheme == value
+          ? const Icon(Icons.check, color: Colors.blue)
+          : null,
+      onTap: () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('app_theme', value);
+        if (mounted) setState(() => _currentTheme = value);
+        Navigator.pop(context);
+
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => MyApp(initialTheme: value),
+          ),
+          (route) => false,
         );
       },
     );

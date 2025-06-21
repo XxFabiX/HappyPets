@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'home.dart';
+import 'package:happypets/pages/home.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -9,12 +10,13 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final String _savedEmail = "juanita.perez@gmail.com";
+  final String _savedEmail = "juanita@gmail.com";
   final String _savedPassword = "12345678";
+  bool _rememberMe = false; // Variable declarada
   bool _isLoading = false;
   bool _showLoginForm = false;
+  bool _showLogoOnly = true;
   bool _loginError = false;
-  bool _showLogoOnly = true;  //estado para controlar vista del logo
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -25,9 +27,11 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     _emailController.text = _savedEmail;
     _passwordController.text = _savedPassword;
+    _loadRememberMePreference(); //Cargar preferencia al iniciar
     
-    // Mostrar logo
+    
     Future.delayed(const Duration(seconds: 5), () {
+
       setState(() {
         _showLogoOnly = false;
         _showLoginForm = true;
@@ -42,6 +46,32 @@ class _SplashScreenState extends State<SplashScreen> {
     super.dispose();
   }
 
+  Future<void> _loadRememberMePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _rememberMe = prefs.getBool('remember_me') ?? false;
+      if (_rememberMe) {
+        _emailController.text = prefs.getString('saved_email') ?? _savedEmail;
+        _passwordController.text = prefs.getString('saved_password') ?? _savedPassword;
+      } else {
+        _emailController.text = '';
+        _passwordController.text = '';
+      }
+    });
+  }
+
+  Future<void> _saveCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setString('saved_email', _emailController.text);
+      await prefs.setString('saved_password', _passwordController.text);
+    } else {
+      await prefs.remove('saved_email');
+      await prefs.remove('saved_password');
+    }
+    await prefs.setBool('remember_me', _rememberMe);
+  }
+
   void _login() {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -49,41 +79,33 @@ class _SplashScreenState extends State<SplashScreen> {
         _loginError = false;
       });
 
-      Future.delayed(const Duration(seconds: 1), () {
-        if (_emailController.text == _savedEmail && 
-            _passwordController.text == _savedPassword) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage(title: 'HappyPets')),
-          );
-        } else {
-          setState(() {
-            _isLoading = false;
-            _loginError = true;
-          });
-        }
-      });
+      if (_emailController.text == _savedEmail && 
+          _passwordController.text == _savedPassword) {
+        _saveCredentials();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage(title: 'HappyPets')),
+        );
+      } else {
+        setState(() {
+          _isLoading = false;
+          _loginError = true;
+        });
+      }
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: _showLogoOnly 
-            ? _buildLogoOnly() 
-            : SingleChildScrollView(  //muestra el formulario luego dle logo
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildLogo(),
-                    const SizedBox(height: 40),
-                    _buildLoginForm(),
-                  ],
-                ),
-              ),
-      ),
+  Widget _buildRememberMeCheckbox() {
+    return Row(
+      children: [
+        Checkbox(
+          value: _rememberMe,
+          onChanged: (value) {
+            setState(() => _rememberMe = value!);
+          },
+        ),
+        const Text('Recordar inicio sesión'),
+      ],
     );
   }
 
@@ -205,6 +227,28 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: _showLogoOnly
+            ? _buildLogoOnly()
+            : SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildLogo(),
+                    const SizedBox(height: 40),
+                    _buildLoginForm(),
+                    _buildRememberMeCheckbox(),
+                  ],
+                ),
+              ),
+      ),
     );
   }
 }

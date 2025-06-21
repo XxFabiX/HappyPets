@@ -12,8 +12,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _currentTab = 0; // 0=Rescate  1=Info Cuidados
-  int _selectedIndex = 0; // Para el drawer navigation
+  int _currentTab = 0; 
+  int _selectedIndex = 0; 
 
   //datos de prueba rescate 
   final List<Map<String, dynamic>> rescuePosts = [

@@ -1,7 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => ProfilePageState();
+}
+
+class ProfilePageState extends State<ProfilePage> {
+  bool _showEmail = true;
+  bool _showPhone = true;
+ 
+  String userName = "";
+  String userEmail = "";
+  String userPhone = "";
+
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfilePreferences();
+  }
+
+  Future<void> _loadProfilePreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _showEmail = prefs.getBool('show_email') ?? true;
+        _showPhone = prefs.getBool('show_phone') ?? true;
+        userName = prefs.getString('user_name') ?? 'Juana Pérez';
+        userEmail = prefs.getString('user_email') ?? 'juanita.perez@gmail.com';
+        userPhone = prefs.getString('user_phone') ?? '+596 1234 4321';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +49,7 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            //foto de perfil 
+            // Foto de perfil
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -32,7 +65,7 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            //datos personales
+            //Datos personales
             Card(
               elevation: 3,
               margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -40,56 +73,57 @@ class ProfilePage extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-
-                    //nombre
-                    const Text(
-                      'Juana Pérez',
-                      style: TextStyle(
+                    //Nombre
+                    Text(
+                      userName,
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Color.fromARGB(255, 63, 120, 207),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
-                    //correo con icono
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.email, size: 18, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'juanita.perez@gmail.com',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    //icono con telefono
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.phone, size: 18, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        const Text(
-                          '+596 1234 4321',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
+
+                    //Correo 
+                    if (_showEmail)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.email, size: 18, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Text(
+                            userEmail,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    if (_showEmail) const SizedBox(height: 8),
+
+                    //Celular 
+                    if (_showPhone)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.phone, size: 18, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Text(
+                            userPhone,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
 
-            //boton contacto
+            //Botón contacto
             ElevatedButton.icon(
               icon: const Icon(Icons.message, size: 20),
               label: const Text('Enviar mensaje'),
               onPressed: () {
-                //contactar usuario
+
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue[800],
@@ -102,7 +136,7 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            //titulo publicaciones
+            //Tirulo publicaciones
             const Row(
               children: [
                 Expanded(
@@ -123,19 +157,20 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            //publicaciones
+            //Publicaciones
             _buildAnimalPost(
               imagePath: 'assets/MaxyCloe.jpg',
               name: 'Max y Cloe',
-              description: 'Rescatados a las afueras de Av.Lircay. Edad: Aprox. 2 años. Busca hogar responsable.',
+              description:
+                  'Rescatados a las afueras de Av.Lircay. Edad: Aprox. 2 años. Busca hogar responsable.',
               location: 'Talca, Chile',
             ),
             const SizedBox(height: 20),
-
             _buildAnimalPost(
               imagePath: 'assets/Luna.jpg',
               name: 'Luna',
-              description: 'Encontrada en Universidad de Talca. Vacunada y esterilizada.',
+              description:
+                  'Encontrada en Universidad de Talca. Vacunada y esterilizada.',
               location: 'Campus Norte, Talca',
             ),
           ],
@@ -144,7 +179,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  //widget reutilizablepara publicaciones
+  //Widget de publicaciones
   Widget _buildAnimalPost({
     required String imagePath,
     required String name,
@@ -159,7 +194,7 @@ class ProfilePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //imagen esquina redonda prinipal
+
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: Image.asset(
@@ -175,10 +210,10 @@ class ProfilePage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                //nombre y ubi
                 Row(
                   children: [
-                    const Icon(Icons.pets, size: 20, color: Color.fromARGB(255, 96, 137, 183)),
+                    const Icon(Icons.pets,
+                        size: 20, color: Color.fromARGB(255, 96, 137, 183)),
                     const SizedBox(width: 8),
                     Text(
                       name,
@@ -190,25 +225,24 @@ class ProfilePage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                
-                //ubicaciion
+
                 Row(
                   children: [
-                    const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                    const Icon(Icons.location_on,
+                        size: 16, color: Colors.grey),
                     const SizedBox(width: 4),
                     Text(
                       location,
-                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      style:
+                          const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                
-                //descripcion
+
                 Text(description),
                 const SizedBox(height: 16),
-                
-                //botones
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -225,7 +259,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // Widget para botones de acción estilizados
+  //Botones abajp de las publicaciones
   Widget _buildActionButton(IconData icon, String label) {
     return Column(
       children: [
@@ -235,10 +269,7 @@ class ProfilePage extends StatelessWidget {
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.blue[800],
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.blue[800]),
         ),
       ],
     );

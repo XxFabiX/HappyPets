@@ -175,7 +175,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
               children: [
                 Icon(Icons.copy),
                 SizedBox(width: 8),
-                Text('Copiar texto (enviar a fabian.0151.valenzuela@gmail.com)'),
+                Text('Copiar texto'),
               ],
             ),
           ),

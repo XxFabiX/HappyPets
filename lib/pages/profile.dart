@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'new_post.dart';
+import 'new_post.dart'; 
+import '../models/post_model.dart'; 
+import '../services/database_helper.dart'; 
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -13,30 +15,182 @@ class ProfilePage extends StatefulWidget {
 class ProfilePageState extends State<ProfilePage> {
   bool _showEmail = true;
   bool _showPhone = true;
-
-  String userName = "";
-  String userEmail = "";
-  String userPhone = "";
-
-  List<Map<String, dynamic>> _userPosts = [];
+  String _userName = "Usuario";
+  String _userEmail = "";
+  String _userPhone = "";
+  List<Post> _userPosts = [];   //lista para los posts del usuario desde la DB
 
   @override
   void initState() {
     super.initState();
-    _loadProfilePreferences();
+    _loadProfilePreferencesAndPosts();
   }
 
-  Future<void> _loadProfilePreferences() async {
+  Future<void> _loadProfilePreferencesAndPosts() async {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
       setState(() {
         _showEmail = prefs.getBool('show_email') ?? true;
         _showPhone = prefs.getBool('show_phone') ?? true;
-        userName = prefs.getString('user_name') ?? 'Juana Pérez';
-        userEmail = prefs.getString('user_email') ?? 'juanita.perez@gmail.com';
-        userPhone = prefs.getString('user_phone') ?? '+596 1234 4321';
+        _userName = prefs.getString('user_name') ?? 'Juana Pérez';
+        _userEmail =
+            prefs.getString('user_email') ?? 'juanita@gmail.com';
+        _userPhone = prefs.getString('user_phone') ?? '+596 1234 4321';
+      });
+      if (_userName != "Usuario" && _userName.isNotEmpty) {
+        _loadUserPosts();
+      }
+    }
+  }
+
+  Future<void> _loadUserPosts() async {
+    //asume que los posts creados por el usuario se guardan con user: tu
+    final posts = await DatabaseHelper.instance.getUserPosts("Tú");
+    if (mounted) {
+      setState(() {
+        _userPosts = posts;
       });
     }
+  }
+
+  void _deletePostFromDb(int postId) async {
+    await DatabaseHelper.instance.deletePost(postId);
+    _loadUserPosts(); //recargar post luego de eliminar
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Publicación eliminada')),
+      );
+    }
+  }
+
+  void _showDeleteConfirmationDialog(int postId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar Eliminación'),
+          content: const Text('¿Estás seguro de que deseas eliminar esta publicación permanentemente?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                _deletePostFromDb(postId);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAnimalPostCard({required Post post}) {
+    bool isFileImage = post.imagePath.startsWith('/');
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: isFileImage
+                ? Image.file(
+                    File(post.imagePath),
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(height: 200, color: Colors.grey[300], child: const Center(child: Icon(Icons.broken_image, size: 50, color: Colors.grey))),
+                  )
+                : Image.asset( //esto seria para posts con images de assets si los tuviera en DB
+                    post.imagePath,
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(height: 200, color: Colors.grey[300], child: const Center(child: Icon(Icons.pets, size: 50, color: Colors.grey))),
+                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  post.name,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 50, 100, 150)),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.location_on, size: 16, color: Colors.grey[700]),
+                    const SizedBox(width: 4),
+                    Text(post.location, style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  post.description,
+                  style: TextStyle(fontSize: 15, color: Colors.grey[800]),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildActionButton(Icons.favorite_border, 'Me gusta'),
+                    _buildActionButton(Icons.share, 'Compartir'),
+
+                    //boton de eliminar solo se muestra si el post.id es valido
+                    if (post.id != null && post.id! > 0)
+                      IconButton(
+                        icon: Icon(Icons.delete_forever, color: Colors.red[700], size: 28),
+                        onPressed: () {
+                          _showDeleteConfirmationDialog(post.id!);
+                        },
+                        tooltip: 'Eliminar Publicación',
+                      )
+                    else  //da espacio si no hay boton
+                      const SizedBox(width: 48),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton(IconData icon, String label) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(icon, color: Colors.blue[800]),
+          onPressed: () {
+            if (label == 'Me gusta') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Funcionalidad en proceso de implementación')),
+              );
+            } else if (label == 'Compartir') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Funcionalidad en proceso de implementación')),
+              );
+            }
+          },
+        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.blue[800])),
+      ],
+    );
   }
 
   @override
@@ -52,242 +206,104 @@ class ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            //Foto de perfil
+            //Info del perfil
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.blue[800]!,
-                  width: 3,
-                ),
+                border: Border.all(color: Colors.blue[800]!, width: 3),
               ),
               child: const CircleAvatar(
                 radius: 50,
                 backgroundImage: AssetImage('assets/FotoPerfil.jpg'),
               ),
             ),
-            const SizedBox(height: 20),
-
-            //Datos personales
-            Card(
-              elevation: 3,
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-
-                    Text(
-                      userName,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 63, 120, 207),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-
-                    if (_showEmail)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.email, size: 18, color: Colors.grey),
-                          const SizedBox(width: 8),
-                          Text(userEmail, style: const TextStyle(color: Colors.grey)),
-                        ],
-                      ),
-                    if (_showEmail) const SizedBox(height: 8),
-
-
-                    if (_showPhone)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.phone, size: 18, color: Colors.grey),
-                          const SizedBox(width: 8),
-                          Text(userPhone, style: const TextStyle(color: Colors.grey)),
-                        ],
-                      ),
-                  ],
-                ),
+            const SizedBox(height: 12),
+            Text(_userName, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            if (_showEmail)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.email, size: 18, color: Colors.grey[700]),
+                  const SizedBox(width: 8),
+                  Text(_userEmail, style: TextStyle(fontSize: 15, color: Colors.grey[700])),
+                ],
               ),
-            ),
-            const SizedBox(height: 20),
-
-            //Boton contacto
-            ElevatedButton.icon(
-              icon: const Icon(Icons.message, size: 20),
-              label: const Text('Enviar mensaje'),
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[800],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
+            if (_showEmail) const SizedBox(height: 4),
+            if (_showPhone)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.phone, size: 18, color: Colors.grey[700]),
+                  const SizedBox(width: 8),
+                  Text(_userPhone, style: TextStyle(fontSize: 15, color: Colors.grey[700])),
+                ],
               ),
-            ),
-            const SizedBox(height: 30),
-
-            // Nueva publicacion
+            const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push<bool>(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => NewPostPage(
-                      onPostCreated: (post) {
-                        setState(() {
-                          //post['liked'] = false;
-                          _userPosts.add(post);
-                        });
-                      },
-                    ),
-                  ),
+                  MaterialPageRoute(builder: (context) => const NewPostPage()),
                 );
+                if (result == true && mounted) {
+                  _loadUserPosts();
+                }
               },
-              icon: const Icon(Icons.add),
-              label: const Text('Nueva publicación'),
+              icon: const Icon(Icons.add_circle_outline),
+              label: const Text('Crear Nueva Publicación'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[700],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
+                  backgroundColor: Colors.green[700],
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  textStyle: const TextStyle(fontSize: 16)),
             ),
+            const SizedBox(height: 24),
+            //Fin de la inf del perfil
 
+            //MIS PUBLICACIONES
             const Row(
               children: [
-                Expanded(
-                  child: Divider(thickness: 1, indent: 20, endIndent: 10),
-                ),
-                Text(
-                  '  MIS PUBLICACIONES  ',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 65, 112, 166),
+                Expanded(child: Divider(thickness: 1, endIndent: 10)),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    'MIS PUBLICACIONES',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 65, 112, 166)),
                   ),
                 ),
-                Expanded(
-                  child: Divider(thickness: 1, indent: 10, endIndent: 20),
-                ),
+                Expanded(child: Divider(thickness: 1, indent: 10)),
               ],
             ),
             const SizedBox(height: 20),
 
 
-            _buildAnimalPost(
-              imagePath: 'assets/MaxyCloe.jpg',
-              name: 'Max y Cloe',
-              description: 'Rescatados a las afueras de Av.Lircay. Edad: Aprox. 2 años. Busca hogar responsable.',
-              location: 'Talca, Chile',
-            ),
-            const SizedBox(height: 20),
-            _buildAnimalPost(
-              imagePath: 'assets/Luna.jpg',
-              name: 'Luna',
-              description: 'Encontrada en Universidad de Talca. Vacunada y esterilizada.',
-              location: 'Campus Norte, Talca',
-              
-            ),
-            for (var post in _userPosts)
-              _buildAnimalPost(
-                imagePath: (post['image'] as File).path,
-                name: post['name'],
-                description: post['description'],
-                location: post['location'],
+            //lista de posts del usuario desde la base de datos
+            if (_userPosts.isEmpty && (_userName != "Usuario" && _userName.isNotEmpty))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: Text('Aún no tienes publicaciones. ¡Crea una!', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+              )
+            else if (_userName == "Usuario" || _userName.isEmpty) //mientras carga el nombre
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: Text('Cargando tus publicaciones...', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _userPosts.length,
+                itemBuilder: (context, index) {
+                  final post = _userPosts[index];
+                  return _buildAnimalPostCard(post: post); 
+                },
               ),
           ],
         ),
       ),
     );
   }
-
-
-  Widget _buildAnimalPost({
-    required String imagePath,
-    required String name,
-    required String description,
-    required String location,
-  }) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: imagePath.startsWith('/')
-                ? Image.file(
-                    File(imagePath),
-                    width: double.infinity,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  )
-                : Image.asset(
-                    imagePath,
-                    width: double.infinity,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-
-                Row(
-                  children: [
-                    const Icon(Icons.pets, size: 20, color: Color.fromARGB(255, 96, 137, 183)),
-                    const SizedBox(width: 8),
-                    Text(name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                
-                Row(
-                  children: [
-                    const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                    const SizedBox(width: 4),
-                    Text(location, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                Text(description),
-                const SizedBox(height: 16),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildActionButton(Icons.favorite_border, 'Me gusta'),
-                    _buildActionButton(Icons.share, 'Compartir'),
-                    _buildActionButton(Icons.info_outline, 'Detalles'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  Widget _buildActionButton(IconData icon, String label) {
-    return Column(
-      children: [
-        IconButton(
-          icon: Icon(icon, color: Colors.blue[800]),
-          onPressed: () {},
-        ),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.blue[800])),
-      ],
-    );
-  }
 }
+
+//Se dejó todo relativamente encaminado para luego hacer un login con diferentes usuarios

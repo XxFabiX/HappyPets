@@ -12,7 +12,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   final String _savedEmail = "juanita@gmail.com";
   final String _savedPassword = "12345678";
-  bool _rememberMe = false; // Variable declarada
+  bool _rememberMe = false; 
   bool _isLoading = false;
   bool _showLoginForm = false;
   bool _showLogoOnly = true;

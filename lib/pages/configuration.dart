@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'splash.dart';
 import 'profile.dart';
 import '../main.dart';
+import 'about.dart';
 
 class ConfigurationPage extends StatefulWidget {
   const ConfigurationPage({super.key});
@@ -178,11 +179,11 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
             elevation: 3,
             child: Column(
               children: [
-                _buildSettingsOption(
+                /*_buildSettingsOption(
                   icon: Icons.notifications,
                   title: 'Notificaciones',
                   onTap: () {},
-                ),
+                ),*/
                 ListTile(
                   leading: Icon(Icons.brightness_6, color: Colors.blue[800]),
                   title: const Text('Tema de la aplicación'),
@@ -222,11 +223,16 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                   title: 'Ayuda y Soporte',
                   onTap: () => _showHelpDialog(context),
                 ),
-                const Divider(height: 1),
+                
                 _buildSettingsOption(
                   icon: Icons.info,
                   title: 'Acerca de',
-                  onTap: () => _showAboutDialog(context),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AboutPage()),
+                    );
+                  },
                 ),
               ],
             ),
@@ -427,12 +433,9 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         if (mounted) setState(() => _currentTheme = value);
         Navigator.pop(context);
 
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => MyApp(initialTheme: value),
-          ),
-          (route) => false,
-        );
+        MyApp.of(context)?.changeTheme(value);
+        Navigator.pop(context); 
+
       },
     );
   }

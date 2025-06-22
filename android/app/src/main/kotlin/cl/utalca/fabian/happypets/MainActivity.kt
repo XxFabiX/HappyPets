@@ -1,4 +1,4 @@
-package com.example.happypets
+package cl.utalca.fabian.happypets
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -166,14 +166,15 @@ class _HomePageState extends State<HomePage> {
             },
           ),
 
-          ListTile(
+          /*ListTile(
             leading: const Icon(Icons.feedback),
             title: const Text('Tu Opinión'),
             onTap: () {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/feedback');
             },
-          ),
+          ),*/
+        
         ],
       ),
     );

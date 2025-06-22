@@ -165,7 +165,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
               children: [
                 Icon(Icons.email),
                 SizedBox(width: 8),
-                Text('Otra app de correo'),
+                Text('App de correo'),
               ],
             ),
           ),
@@ -175,7 +175,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
               children: [
                 Icon(Icons.copy),
                 SizedBox(width: 8),
-                Text('Copiar texto'),
+                Text('Copiar texto (enviar a fabian.0151.valenzuela@gmail.com)'),
               ],
             ),
           ),

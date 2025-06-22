@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'new_post.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -11,11 +13,12 @@ class ProfilePage extends StatefulWidget {
 class ProfilePageState extends State<ProfilePage> {
   bool _showEmail = true;
   bool _showPhone = true;
- 
+
   String userName = "";
   String userEmail = "";
   String userPhone = "";
 
+  List<Map<String, dynamic>> _userPosts = [];
 
   @override
   void initState() {
@@ -49,7 +52,7 @@ class ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Foto de perfil
+            //Foto de perfil
             Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -73,7 +76,7 @@ class ProfilePageState extends State<ProfilePage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    //Nombre
+
                     Text(
                       userName,
                       style: const TextStyle(
@@ -84,32 +87,26 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                     const SizedBox(height: 8),
 
-                    //Correo 
+
                     if (_showEmail)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(Icons.email, size: 18, color: Colors.grey),
                           const SizedBox(width: 8),
-                          Text(
-                            userEmail,
-                            style: const TextStyle(color: Colors.grey),
-                          ),
+                          Text(userEmail, style: const TextStyle(color: Colors.grey)),
                         ],
                       ),
                     if (_showEmail) const SizedBox(height: 8),
 
-                    //Celular 
+
                     if (_showPhone)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(Icons.phone, size: 18, color: Colors.grey),
                           const SizedBox(width: 8),
-                          Text(
-                            userPhone,
-                            style: const TextStyle(color: Colors.grey),
-                          ),
+                          Text(userPhone, style: const TextStyle(color: Colors.grey)),
                         ],
                       ),
                   ],
@@ -118,13 +115,11 @@ class ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 20),
 
-            //Botón contacto
+            //Boton contacto
             ElevatedButton.icon(
               icon: const Icon(Icons.message, size: 20),
               label: const Text('Enviar mensaje'),
-              onPressed: () {
-
-              },
+              onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue[800],
                 foregroundColor: Colors.white,
@@ -136,7 +131,32 @@ class ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 30),
 
-            //Tirulo publicaciones
+            // Nueva publicacion
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NewPostPage(
+                      onPostCreated: (post) {
+                        setState(() {
+                          //post['liked'] = false;
+                          _userPosts.add(post);
+                        });
+                      },
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Nueva publicación'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[700],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+            ),
+
             const Row(
               children: [
                 Expanded(
@@ -157,29 +177,35 @@ class ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 20),
 
-            //Publicaciones
+
             _buildAnimalPost(
               imagePath: 'assets/MaxyCloe.jpg',
               name: 'Max y Cloe',
-              description:
-                  'Rescatados a las afueras de Av.Lircay. Edad: Aprox. 2 años. Busca hogar responsable.',
+              description: 'Rescatados a las afueras de Av.Lircay. Edad: Aprox. 2 años. Busca hogar responsable.',
               location: 'Talca, Chile',
             ),
             const SizedBox(height: 20),
             _buildAnimalPost(
               imagePath: 'assets/Luna.jpg',
               name: 'Luna',
-              description:
-                  'Encontrada en Universidad de Talca. Vacunada y esterilizada.',
+              description: 'Encontrada en Universidad de Talca. Vacunada y esterilizada.',
               location: 'Campus Norte, Talca',
+              
             ),
+            for (var post in _userPosts)
+              _buildAnimalPost(
+                imagePath: (post['image'] as File).path,
+                name: post['name'],
+                description: post['description'],
+                location: post['location'],
+              ),
           ],
         ),
       ),
     );
   }
 
-  //Widget de publicaciones
+
   Widget _buildAnimalPost({
     required String imagePath,
     required String name,
@@ -188,21 +214,26 @@ class ProfilePageState extends State<ProfilePage> {
   }) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Image.asset(
-              imagePath,
-              width: double.infinity,
-              height: 200,
-              fit: BoxFit.cover,
-            ),
+            child: imagePath.startsWith('/')
+                ? Image.file(
+                    File(imagePath),
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  )
+                : Image.asset(
+                    imagePath,
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  ),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -212,30 +243,18 @@ class ProfilePageState extends State<ProfilePage> {
 
                 Row(
                   children: [
-                    const Icon(Icons.pets,
-                        size: 20, color: Color.fromARGB(255, 96, 137, 183)),
+                    const Icon(Icons.pets, size: 20, color: Color.fromARGB(255, 96, 137, 183)),
                     const SizedBox(width: 8),
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    Text(name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 8),
-
+                
                 Row(
                   children: [
-                    const Icon(Icons.location_on,
-                        size: 16, color: Colors.grey),
+                    const Icon(Icons.location_on, size: 16, color: Colors.grey),
                     const SizedBox(width: 4),
-                    Text(
-                      location,
-                      style:
-                          const TextStyle(color: Colors.grey, fontSize: 14),
-                    ),
+                    Text(location, style: const TextStyle(color: Colors.grey, fontSize: 14)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -259,7 +278,7 @@ class ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  //Botones abajp de las publicaciones
+
   Widget _buildActionButton(IconData icon, String label) {
     return Column(
       children: [
@@ -267,10 +286,7 @@ class ProfilePageState extends State<ProfilePage> {
           icon: Icon(icon, color: Colors.blue[800]),
           onPressed: () {},
         ),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Colors.blue[800]),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.blue[800])),
       ],
     );
   }

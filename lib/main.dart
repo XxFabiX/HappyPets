@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/splash.dart';
 import 'pages/feedback.dart';
+import 'pages/about.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,9 +17,13 @@ class MyApp extends StatefulWidget {
   
   const MyApp({super.key, this.initialTheme = 'system'});
 
+  static MyAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<MyAppState>();
+
   @override
   State<MyApp> createState() => MyAppState();
 }
+
 
 class MyAppState extends State<MyApp> {
   late String _currentTheme;

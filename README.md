@@ -106,15 +106,20 @@ HappyPets es una aplicación movil desarrollada en Flutter para conectar animale
 
 Puedes descargar el archivo APK de depuración para instalar la aplicación en un dispositivo Android desde el siguiente enlace:
 
-*   [Descargar Debug APK (app-debug.apk)](apk/app-debug.apk)
+*   [Descargar Debug APK (app-debug.apk)](apk/happypets.apk)
 
 ## Instrucciones de Instalación
 
 **Descargar APK**
+
 **-Instalar APK**
+
 **-Iniciar Sesión****
+
     **Correo:** juanita@gmail.com
+
     **Contraseña:** 12345678
+
 **Así se simple**
 
 ## Video Explicativo
@@ -124,11 +129,18 @@ Puedes descargar el archivo APK de depuración para instalar la aplicación en u
 ## Tecnologias Utilizadas
 
 -Framework: Flutter 
+
 -Lenguaje: Dart 
+
 -Base de Datos Local: SQLite
+
 -Gestión de Preferencias: shared_preferences
+
 -Selección de Imagenes: image_picker
+
 -Lanzador de URLs (para correo): url_launcher
+
 -IDE: Visual Studio Code/Android Studio
+
 -Control de Versiones: Git y GitHub
 

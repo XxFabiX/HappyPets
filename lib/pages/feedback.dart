@@ -205,7 +205,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor ingrese su nombre o correo')),
+        const SnackBar(content: Text('Por favor ingrese su nombre')),
       );
       return;
     }

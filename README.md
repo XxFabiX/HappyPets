@@ -124,7 +124,11 @@ Puedes descargar el archivo APK de depuración para instalar la aplicación en u
 
 ## Video Explicativo
 
-**Link:** xxxxxxx
+**Link:**
+https://youtu.be/vBU9Wpu3EdY
+
+**Enlace Video APP:**
+https://www.canva.com/design/DAGnjmR_OY0/aZ85PiCG7GbS_l_n7Ktehw/view?utm_content=DAGnjmR_OY0&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h5947338213 
 
 ## Tecnologias Utilizadas
 

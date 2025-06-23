@@ -69,7 +69,7 @@ HappyPets es una aplicación movil desarrollada en Flutter para conectar animale
 ![Diagrama Acceso a la información](assets/diagramas/DiagramaDeEntrada.jpg)
 
 ### Diagrama de flujo
-
+![Diagrama de Flujo](assets/diagramas/DiagramaDeFlujoPrincipal.jpg)
 
 Funcionalidades Clave:
 -Rescate

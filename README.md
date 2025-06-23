@@ -68,11 +68,67 @@ HappyPets es una aplicación movil desarrollada en Flutter para conectar animale
 ### Diagrama de Acceso a la Información
 ![Diagrama Acceso a la información](assets/diagramas/DiagramaDeEntrada.jpg)
 
-### Diagrama de flujo
+### Diagrama de flujo principal (Agregar Publicaciones)
 ![Diagrama de Flujo](assets/diagramas/DiagramaDeFlujoPrincipal.jpg)
 
-Funcionalidades Clave:
--Rescate
--Información sobre cuidados
--Perfil
--Configuraciones
+## CAPTURAS
+
+1. Pantalla de Inicio 
+![Pantalla de Login](assets/capturas/InicioSesion.jpg)
+
+2. Página Principal (Pestaña Rescates)
+![HomePage Rescates](assets/capturas/rescates.jpg)
+
+3. Página Principal (Pestaña Info Cuidados)
+![HomePage Info Cuidados](assets/capturas/cuidados.jpg)
+
+4. Perfil de Usuario (ProfilePage)
+![ProfilePage](assets/capturas/perfil.jpg)
+
+5. Crear Nueva Publicación
+![NewPostPage](assets/capturas/nuevaPublicacion.jpg)
+![NewPostPage](assets/capturas/perfilPublicacion.jpg)
+
+6. Configuración 
+![ConfigurationPage](assets/capturas/configuracion.jpg)
+
+7. Selección de Tema
+![Selección de Tema](assets/capturas/tema.jpg)
+
+8. Acerca de
+![AboutPage](assets/capturas/acerdade.jpg)
+
+9. Feedback/Opinión
+![FeedbackPage](assets/capturas/feedback.jpg)
+
+
+## Archivo De Instalación
+
+Puedes descargar el archivo APK de depuración para instalar la aplicación en un dispositivo Android desde el siguiente enlace:
+
+*   [Descargar Debug APK (app-debug.apk)](apk/app-debug.apk)
+
+## Instrucciones de Instalación
+
+**Descargar APK**
+**-Instalar APK**
+**-Iniciar Sesión****
+    **Correo:** juanita@gmail.com
+    **Contraseña:** 12345678
+**Así se simple**
+
+## Video Explicativo
+
+**Link:** xxxxxxx
+
+## Tecnologias Utilizadas
+
+-Framework: Flutter 
+-Lenguaje: Dart 
+-Base de Datos Local: SQLite
+-Gestión de Preferencias: shared_preferences
+-Selección de Imagenes: image_picker
+-Lanzador de URLs (para correo): url_launcher
+-IDE: Visual Studio Code/Android Studio
+-Control de Versiones: Git y GitHub
+
